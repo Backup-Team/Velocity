@@ -1,0 +1,34 @@
+version: 2.1
+workflows:
+  lint_test:
+    jobs:
+      - lint_and_test
+
+jobs:
+  lint_and_test:
+    docker:
+      - image: cimg/rust:1.50.0
+    working_directory: ~/repo
+    steps:
+        - checkout
+        - restore_cache:
+            keys:
+              - deps-{{ checksum "Cargo.lock" }}
+        - run:
+            name: Install Dependancies
+            command: |
+              sudo apt-get update
+              sudo apt-get install pkg-config libx11-dev libasound2-dev libudev-dev clang libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev cmake
+        - run:
+            name: Run Build
+            command: cargo build
+        - save_cache:
+            key: deps-{{ checksum "Cargo.lock" }}
+            paths:
+              - ./target
+        - run:
+            name: Run Clippy
+            command: cargo clippy
+        - run:
+            name: Run Test
+            command: cargo test
