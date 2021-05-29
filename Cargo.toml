@@ -5,7 +5,7 @@ authors = ["Hector Maddock-Greene <rope.hmg@protonmail.com>"]
 edition = "2018"
 
 [[bin]]
-name              = "demo"
+name              = "hector"
 required-features = ["demo"]
 
 [profile.release]
