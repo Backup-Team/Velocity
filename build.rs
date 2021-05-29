@@ -14,7 +14,7 @@ fn compile_shaders() {
         if path.is_file() {
             if let Some(extension) = path.extension().and_then(OsStr::to_str) {
                 let shader_kind = match extension {
-ind::Fragment),
+                    "frag" => Some(ShaderKind::Fragment),
                     "vert" => Some(ShaderKind::Vertex),
                     "comp" => Some(ShaderKind::Compute),
                     _ => None,
