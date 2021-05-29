@@ -1,10 +1,23 @@
+use wgpu::{
+    include_spirv,
+    FragmentState,
+    MultisampleState,
+    PipelineLayout,
+    PipelineLayoutDescriptor,
+    PrimitiveState,
+    RenderPipeline,
+    VertexState,
+};
+
+use crate::graphics::{Renderer, Vertex};
+
 pub struct Pipeline {
-    pipeline_layout: PipelineLayout,
-    render_pipeline: RenderPipeline,
+    pub(in crate::graphics) pipeline_layout: PipelineLayout,
+    pub(in crate::graphics) render_pipeline: RenderPipeline,
 }
 
 impl Pipeline {
-    fn new(
+    pub fn new(
         Renderer {
             device,
             swap_chain_format,
@@ -15,8 +28,8 @@ impl Pipeline {
         // Pass shader path(s)
         // Pass buffer descriptor(s)
 
-        let frag_spirv = include_spirv!("graphics/shaders/test.frag.spv");
-        let vert_spirv = include_spirv!("graphics/shaders/test.vert.spv");
+        let frag_spirv = include_spirv!("./shaders/voxel.frag.spv");
+        let vert_spirv = include_spirv!("./shaders/voxel.vert.spv");
 
         let frag_module = device.create_shader_module(&frag_spirv);
         let vert_module = device.create_shader_module(&vert_spirv);
@@ -36,7 +49,7 @@ impl Pipeline {
         let fragment_state = FragmentState {
             module:      &frag_module,
             entry_point: "main",
-            targets:     &[swap_chain_format.into()],
+            targets:     &[(*swap_chain_format).into()],
         };
 
         let render_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {

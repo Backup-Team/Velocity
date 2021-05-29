@@ -4,6 +4,10 @@ version = "0.1.0"
 authors = ["Hector Maddock-Greene <rope.hmg@protonmail.com>"]
 edition = "2018"
 
+[[bin]]
+name              = "demo"
+required-features = ["demo"]
+
 [profile.release]
 codegen-units = 1
 lto           = true
@@ -13,5 +17,12 @@ bytemuck = { version = "1.4", features = [ "derive" ] }
 log      = "0.4"
 reqwest  = { version = "0.11", features = ["json"] }
 serde    = { version = "1", features = ["derive"] }
+tokio    = { version = "1", features = ["full"], optional = true}
 wgpu     = "0.8"
 winit    = "0.25"
+
+[build-dependencies]
+shaderc = "0.7"
+
+[features]
+demo = ["tokio"]

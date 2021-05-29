@@ -1,13 +1,13 @@
-use winit::{
+pub use winit::{
     error::OsError,
     event::{DeviceEvent, Event, WindowEvent},
     event_loop::{ControlFlow, EventLoop},
-    window::{Window, WindowBuilder},
+    window::Window,
 };
 
-use crate::graphics::{Gpu, Vertex};
+use winit::window::WindowBuilder;
 
-fn create_window(title: impl AsRef<str>) -> Result<(EventLoop, Window), OsError> {
+pub fn create_window(title: impl AsRef<str>) -> Result<(EventLoop<()>, Window), OsError> {
     let event_loop = EventLoop::new();
     let window = WindowBuilder::new()
         .with_title(title.as_ref())

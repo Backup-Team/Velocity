@@ -1,5 +1,6 @@
 mod angle;
 mod bounds3;
+mod mat4;
 mod point3;
 mod quat;
 mod unit;
@@ -10,12 +11,20 @@ pub mod fuzzy;
 
 // TODO:
 // Point2
-// Mat4x4
 // Bounds2
 // Quat from_yaw_pitch_roll
 // impl PartialEq using fuzzy
 
-pub use crate::maths::{angle::*, bounds3::*, point3::*, quat::*, unit::*, vec2::*, vec3::*};
+pub use crate::maths::{
+    angle::*,
+    bounds3::*,
+    mat4::*,
+    point3::*,
+    quat::*,
+    unit::*,
+    vec2::*,
+    vec3::*,
+};
 
 // TODO:
 // Figure out how to mark macros as pub(crate)

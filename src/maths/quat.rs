@@ -1,6 +1,10 @@
 use bytemuck::{Pod, Zeroable};
 
-use crate::{scalar_maths, vec_maths, Angle, Normed, Unit, Vec3};
+use crate::{
+    maths::{Angle, Normed, Unit, Vec3},
+    scalar_maths,
+    vec_maths,
+};
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy, Pod, Zeroable)]
@@ -10,12 +14,19 @@ pub struct Quat {
 }
 
 impl Quat {
+    pub const fn identity() -> Self {
+        Self {
+            w: 1.0,
+            v: Vec3::zero(),
+        }
+    }
+
     pub const fn new(w: f32, v: Vec3) -> Self {
         Self { w, v }
     }
 
     pub fn from_axis_angle(axis: Unit<Vec3>, angle: Angle) -> Self {
-        let (half_sin, half_cos) = Angle::radians(angle.into_radians() * 0.5).sin_cos();
+        let (half_sin, half_cos) = (angle * 0.5).sin_cos();
 
         Self {
             w: half_sin,
@@ -33,13 +44,7 @@ impl Quat {
     }
 
     pub fn inverse(&self) -> Self {
-        let absolute = self.norm_squared().recip();
-        let conjugate = self.conjugate();
-
-        Self {
-            w: conjugate.w * absolute,
-            v: conjugate.v * absolute,
-        }
+        self.conjugate() * self.norm_squared().recip()
     }
 }
 
@@ -64,7 +69,7 @@ impl Mul for Quat {
 impl MulAssign for Quat {
     fn mul_assign(&mut self, rhs: Self) {
         let scalar = self.w * rhs.w - self.v.dot(&rhs.v);
-        let imaginary = rhs.v * self.w + self.v * rhs.w + self.v.cross(&rhs.v);
+        let imaginary = self.v * rhs.w + rhs.v * self.w + self.v.cross(&rhs.v);
 
         self.w = scalar;
         self.v = imaginary;

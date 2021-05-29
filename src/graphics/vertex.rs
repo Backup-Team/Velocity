@@ -13,7 +13,12 @@ pub struct Vertex {
 }
 
 impl Vertex {
-    pub fn buffer_descriptor<'a>() -> VertexBufferLayout<'a> {
+    pub fn buffer_descriptor() -> VertexBufferLayout<'static> {
+        // NOTE:
+        // This works through rvalue static promotion. Event though the attributes slice is a
+        // reference it gets promoted to a &'static because it is "const compatible". If you change
+        // it to a let binding it will caused a compilation error.
+
         VertexBufferLayout {
             array_stride: mem::size_of::<Vertex>() as BufferAddress,
             step_mode:    InputStepMode::Vertex,

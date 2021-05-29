@@ -2,9 +2,10 @@ use bytemuck::{Pod, Zeroable};
 
 use crate::{maths::Normed, scalar_maths, vec_maths};
 
+use super::Quat;
+
 #[repr(C)]
-#[derive(Debug, Clone, Copy)]
-#[cfg_attr(feature = "bytes", derive(Pod, Zeroable))]
+#[derive(Debug, Clone, Copy, Pod, Zeroable)]
 pub struct Vec3 {
     pub x: f32,
     pub y: f32,
@@ -62,6 +63,17 @@ impl Vec3 {
             self.z * rhs.x - self.x * rhs.z,
             self.x * rhs.y - self.y * rhs.x,
         )
+    }
+
+    pub fn rotate(&self, quat: &Quat) -> Self {
+        // The below code is an optimised form of:
+        // (quat * Quat::new(0.0, *self) * quat.inverse()).v
+        let cross = quat.v.cross(self);
+        quat.v + cross * (2.0 * quat.w) + quat.v.cross(&cross) * 2.0
+    }
+
+    pub fn rotate_by(&mut self, quat: &Quat) {
+        *self = self.rotate(quat);
     }
 }
 

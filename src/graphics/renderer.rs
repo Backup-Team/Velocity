@@ -1,7 +1,6 @@
 use std::fmt::{self, Display};
 
 use wgpu::{
-    include_spirv,
     util::{BufferInitDescriptor, DeviceExt},
     Adapter,
     BackendBit,
@@ -12,32 +11,25 @@ use wgpu::{
     Device,
     DeviceDescriptor,
     Features,
-    FragmentState,
     Instance,
     Limits,
     LoadOp,
-    MultisampleState,
     Operations,
-    PipelineLayout,
-    PipelineLayoutDescriptor,
     PowerPreference,
     PresentMode,
-    PrimitiveState,
     Queue,
     RenderPassColorAttachment as RenderPassColourAttachment,
     RenderPassDescriptor,
-    RenderPipeline,
     RequestAdapterOptions,
     RequestDeviceError,
     Surface,
     SwapChain,
     SwapChainDescriptor,
     SwapChainError,
-    SwapChainFormat,
+    TextureFormat,
     TextureUsage,
-    VertexState,
 };
-use winit::{dpi::PhysicalSize, window::Window};
+use winit::{dpi::PhysicalSize, event::WindowEvent, event_loop::ControlFlow, window::Window};
 
 use crate::graphics::{Pipeline, Vertex};
 
@@ -71,7 +63,7 @@ pub struct Renderer {
     pub(in crate::graphics) queue:                 Queue,
     pub(in crate::graphics) swap_chain:            SwapChain,
     pub(in crate::graphics) swap_chain_descriptor: SwapChainDescriptor,
-    pub(in crate::graphics) swap_chain_format:     SwapChainFormat,
+    pub(in crate::graphics) swap_chain_format:     TextureFormat,
 }
 
 impl Renderer {
@@ -137,6 +129,13 @@ impl Renderer {
         }
     }
 
+    pub fn handle_event(&mut self, event: &WindowEvent) {
+        match event {
+            WindowEvent::Resized(new_size) => self.resize(*new_size),
+            _ => {},
+        }
+    }
+
     pub fn create_buffer(&self, vertices: &[Vertex]) -> Buffer {
         let vertex_buffer = self.device.create_buffer_init(&BufferInitDescriptor {
             label:    None,
@@ -161,8 +160,9 @@ impl Renderer {
         self.resize(self.size);
     }
 
-    pub fn render(&mut self, pipeline: &Pipeline, buffer: &Buffer) -> Result<(), SwapChainError> {
-        self.swap_chain.get_current_frame().map(|frame| {
+    #[must_use]
+    pub fn render(&mut self, pipeline: &Pipeline, buffer: &Buffer) -> Result<(), ControlFlow> {
+        let render_result = self.swap_chain.get_current_frame().map(|frame| {
             let frame = frame.output;
 
             let mut encoder = self
@@ -185,12 +185,38 @@ impl Renderer {
                     depth_stencil_attachment: None,
                 });
 
-                render_pass.set_pipeline(pipeline.render_pipeline);
+                render_pass.set_pipeline(&pipeline.render_pipeline);
                 render_pass.set_vertex_buffer(0, buffer.slice(..));
                 render_pass.draw(0..3, 0..1);
             }
 
             self.queue.submit(std::iter::once(encoder.finish()));
-        })
+        });
+
+        if let Err(swap_chain_error) = render_result {
+            let mut critical_failure = false;
+
+            match swap_chain_error {
+                SwapChainError::Lost => {
+                    log::warn!("{}", swap_chain_error);
+                    self.recreate_swap_chain();
+                },
+
+                SwapChainError::OutOfMemory => {
+                    log::error!("{}", swap_chain_error);
+                    critical_failure = true;
+                },
+
+                _ => log::error!("{}", swap_chain_error),
+            }
+
+            if critical_failure {
+                Err(ControlFlow::Exit)
+            } else {
+                Ok(())
+            }
+        } else {
+            Ok(())
+        }
     }
 }

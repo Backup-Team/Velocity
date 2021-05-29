@@ -1,6 +1,10 @@
 use bytemuck::{Pod, Zeroable};
 
-use crate::{maths::Normed, scalar_maths, vec_maths};
+use crate::{
+    maths::{Angle, Normed},
+    scalar_maths,
+    vec_maths,
+};
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy, Pod, Zeroable)]
@@ -64,6 +68,19 @@ impl Vec2 {
 
     pub fn right_perpendicular_dot(&self, rhs: &Self) -> f32 {
         self.right_perpendicular().dot(rhs)
+    }
+
+    pub fn rotate(&self, angle: Angle) -> Self {
+        let (sin, cos) = angle.sin_cos();
+
+        Self {
+            x: self.x * cos - self.y * sin,
+            y: self.x * sin + self.y * cos,
+        }
+    }
+
+    pub fn rotate_by(&mut self, angle: Angle) {
+        *self = self.rotate(angle)
     }
 }
 

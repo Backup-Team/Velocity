@@ -4,8 +4,12 @@ mod vertex;
 
 pub use crate::graphics::{pipeline::*, renderer::*, vertex::*};
 
+use std::future::Future;
+
 use winit::window::Window;
 
-async fn create_renderer(window: &Window) -> Result<Renderer, RendererError> {
+pub fn create_renderer(
+    window: &Window,
+) -> impl Future<Output = Result<Renderer, RendererError>> + '_ {
     Renderer::new(window)
 }
