@@ -13,7 +13,7 @@ jobs:
         - checkout
         - restore_cache:
             keys:
-              - deps-{{ checksum "Cargo.lock" }}
+              - deps-{{ checksum "Cargo.toml" }}
         - run:
             name: Install Dependancies
             command: |
@@ -23,7 +23,7 @@ jobs:
             name: Run Build
             command: cargo build
         - save_cache:
-            key: deps-{{ checksum "Cargo.lock" }}
+            key: deps-{{ checksum "Cargo.toml" }}
             paths:
               - ./target
         - run:
