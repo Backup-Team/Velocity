@@ -21,14 +21,14 @@ jobs:
               sudo apt-get install pkg-config libx11-dev libasound2-dev libudev-dev clang libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev cmake libssl-dev
         - run:
             name: Run Build
-            command: cargo build
+            command: cargo +nightly build
         - save_cache:
             key: deps-{{ checksum "Cargo.toml" }}
             paths:
               - ./target
         - run:
             name: Run Clippy
-            command: cargo clippy
+            command: cargo +nightly clippy
         - run:
             name: Run Test
-            command: cargo test
+            command: cargo +nightly test
