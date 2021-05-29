@@ -18,7 +18,7 @@ jobs:
             name: Install Dependancies
             command: |
               sudo apt-get update
-              sudo apt-get install pkg-config libx11-dev libasound2-dev libudev-dev clang libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev cmake
+              sudo apt-get install pkg-config libx11-dev libasound2-dev libudev-dev clang libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev cmake libssl-dev
         - run:
             name: Run Build
             command: cargo build
