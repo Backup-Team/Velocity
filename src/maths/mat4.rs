@@ -6,9 +6,9 @@ pub struct Mat4([f32; 16]);
 
 pub struct Camera {
     pub position: Vec3,
-    pub right: Vec3,
-    pub up: Vec3,
-    pub forward: Vec3,
+    pub right:    Vec3,
+    pub up:       Vec3,
+    pub forward:  Vec3,
 }
 
 impl Mat4 {
