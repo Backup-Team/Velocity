@@ -19,6 +19,7 @@ jobs:
             command: |
               sudo apt-get update
               sudo apt-get install pkg-config libx11-dev libasound2-dev libudev-dev clang libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev cmake libssl-dev
+              rustup toolchain add nightly
         - run:
             name: Run Build
             command: cargo +nightly build
