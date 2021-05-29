@@ -68,7 +68,7 @@ impl Mat4 {
 
     #[rustfmt::skip]
     pub fn look_at(camera: &Camera, target: &Vec3) -> Self {
-        let z_axis =
+        // let z_axis = < hector done goofed
 
 
         Self([
