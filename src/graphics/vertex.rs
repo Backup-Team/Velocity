@@ -26,12 +26,12 @@ impl Vertex {
                 VertexAttribute {
                     offset:          0,
                     shader_location: 0,
-                    format:          VertexFormat::Float32,
+                    format:          VertexFormat::Float32x3,
                 },
                 VertexAttribute {
                     offset:          mem::size_of::<Vec3>() as BufferAddress,
-                    shader_location: 0,
-                    format:          VertexFormat::Float32,
+                    shader_location: 1,
+                    format:          VertexFormat::Float32x3,
                 },
             ],
         }

@@ -1,15 +1,15 @@
+mod buffer;
+mod camera;
 mod pipeline;
 mod renderer;
+mod transform;
 mod vertex;
 
-pub use crate::graphics::{pipeline::*, renderer::*, vertex::*};
-
-use std::future::Future;
-
-use winit::window::Window;
-
-pub fn create_renderer(
-    window: &Window,
-) -> impl Future<Output = Result<Renderer, RendererError>> + '_ {
-    Renderer::new(window)
-}
+pub use crate::graphics::{
+    buffer::*,
+    camera::*,
+    pipeline::*,
+    renderer::*,
+    transform::*,
+    vertex::*,
+};

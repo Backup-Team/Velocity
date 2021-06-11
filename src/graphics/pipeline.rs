@@ -1,11 +1,13 @@
 use wgpu::{
-    include_spirv,
     FragmentState,
     MultisampleState,
     PipelineLayout,
     PipelineLayoutDescriptor,
     PrimitiveState,
     RenderPipeline,
+    ShaderFlags,
+    ShaderModuleDescriptor,
+    ShaderSource,
     VertexState,
 };
 
@@ -28,11 +30,11 @@ impl Pipeline {
         // Pass shader path(s)
         // Pass buffer descriptor(s)
 
-        let frag_spirv = include_spirv!("./shaders/voxel.frag.spv");
-        let vert_spirv = include_spirv!("./shaders/voxel.vert.spv");
-
-        let frag_module = device.create_shader_module(&frag_spirv);
-        let vert_module = device.create_shader_module(&vert_spirv);
+        let shader_module = device.create_shader_module(&ShaderModuleDescriptor {
+            label:  None,
+            flags:  ShaderFlags::all(),
+            source: ShaderSource::Wgsl(include_str!("./shaders/voxel.wgsl").into()),
+        });
 
         let pipeline_layout = device.create_pipeline_layout(&PipelineLayoutDescriptor {
             label:                None,
@@ -41,13 +43,13 @@ impl Pipeline {
         });
 
         let vertex_state = VertexState {
-            module:      &vert_module,
+            module:      &shader_module,
             entry_point: "main",
             buffers:     &[Vertex::buffer_descriptor()],
         };
 
         let fragment_state = FragmentState {
-            module:      &frag_module,
+            module:      &shader_module,
             entry_point: "main",
             targets:     &[(*swap_chain_format).into()],
         };

@@ -1,8 +1,10 @@
 use bytemuck::{Pod, Zeroable};
 
-use crate::{maths::Normed, scalar_maths, vec_maths};
-
-use super::Quat;
+use crate::{
+    maths::{Mat4, Normed, Quat},
+    scalar_maths,
+    vec_maths,
+};
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy, Pod, Zeroable)]
@@ -74,6 +76,18 @@ impl Vec3 {
 
     pub fn rotate_by(&mut self, quat: &Quat) {
         *self = self.rotate(quat);
+    }
+
+    pub fn transform(&self, matrix: &Mat4) -> Self {
+        let x = self.x * matrix[0] + self.y * matrix[4] + self.z * matrix[8] + matrix[12];
+        let y = self.x * matrix[1] + self.y * matrix[5] + self.z * matrix[9] + matrix[13];
+        let z = self.x * matrix[2] + self.y * matrix[6] + self.z * matrix[10] + matrix[14];
+
+        Self { x, y, z }
+    }
+
+    pub fn transform_by(&mut self, matrix: &Mat4) {
+        *self = self.transform(matrix);
     }
 }
 

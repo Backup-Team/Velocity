@@ -21,6 +21,10 @@ impl Point3 {
         Self::new(value, value, value)
     }
 
+    pub const fn identity() -> Self {
+        Self::new(0.0, 0.0, 0.0)
+    }
+
     pub const fn vector_from_origin(&self) -> Vec3 {
         Vec3::new(self.x, self.y, self.z)
     }

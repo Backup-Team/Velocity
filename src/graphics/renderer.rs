@@ -4,7 +4,6 @@ use wgpu::{
     util::{BufferInitDescriptor, DeviceExt},
     Adapter,
     BackendBit,
-    Buffer,
     BufferUsage,
     Color as Colour,
     CommandEncoderDescriptor,
@@ -31,7 +30,7 @@ use wgpu::{
 };
 use winit::{dpi::PhysicalSize, event::WindowEvent, event_loop::ControlFlow, window::Window};
 
-use crate::graphics::{Pipeline, Vertex};
+use crate::graphics::{Buffer, Pipeline, Vertex};
 
 #[derive(Debug, Clone)]
 pub enum RendererError {
@@ -67,14 +66,17 @@ pub struct Renderer {
 }
 
 impl Renderer {
-    pub async fn new(window: &Window) -> Result<Self, RendererError> {
+    pub async fn new(
+        window: &Window,
+        power_preference: PowerPreference,
+    ) -> Result<Self, RendererError> {
         let size = window.inner_size();
         let instance = Instance::new(BackendBit::all());
         let surface = unsafe { instance.create_surface(window) };
 
         let adapter = instance
             .request_adapter(&RequestAdapterOptions {
-                power_preference:   PowerPreference::LowPower,
+                power_preference,
                 compatible_surface: Some(&surface),
             })
             .await;
@@ -143,7 +145,10 @@ impl Renderer {
             usage:    BufferUsage::VERTEX,
         });
 
-        vertex_buffer
+        Buffer {
+            buffer: vertex_buffer,
+            size:   vertices.len() as u32,
+        }
     }
 
     pub fn resize(&mut self, new_size: PhysicalSize<u32>) {
@@ -174,7 +179,7 @@ impl Renderer {
                     view:           &frame.view,
                     resolve_target: None,
                     ops:            Operations {
-                        load:  LoadOp::Clear(Colour::GREEN),
+                        load:  LoadOp::Clear(Colour::BLACK),
                         store: true,
                     },
                 }];
@@ -186,8 +191,8 @@ impl Renderer {
                 });
 
                 render_pass.set_pipeline(&pipeline.render_pipeline);
-                render_pass.set_vertex_buffer(0, buffer.slice(..));
-                render_pass.draw(0..3, 0..1);
+                render_pass.set_vertex_buffer(0, buffer.buffer.slice(..));
+                render_pass.draw(0..buffer.size, 0..1);
             }
 
             self.queue.submit(std::iter::once(encoder.finish()));

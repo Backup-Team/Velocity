@@ -3,6 +3,7 @@ mod bounds3;
 mod mat4;
 mod point3;
 mod quat;
+mod scale3;
 mod unit;
 mod vec2;
 mod vec3;
@@ -21,6 +22,7 @@ pub use crate::maths::{
     mat4::*,
     point3::*,
     quat::*,
+    scale3::*,
     unit::*,
     vec2::*,
     vec3::*,
@@ -39,7 +41,10 @@ macro_rules! vec_maths {
                 type Output = $struct;
 
                 fn $fn(mut self, rhs: $struct) -> Self::Output {
+                    // We should benchmark the difference between this:
                     self $op rhs;
+                    // and this:
+                    // self $op &rhs;
                     self
                 }
             }
@@ -86,6 +91,39 @@ macro_rules! scalar_maths {
             impl $assign_trait<f32> for $struct {
                 fn $assign_fn(&mut self, rhs: f32) {
                     $(self.$member $op rhs;)*
+                }
+            }
+        )*
+    };
+}
+
+#[macro_export]
+macro_rules! negate {
+    ($($struct:ident { $( $member:ident )* },)*) => {
+        $(
+            use std::ops::Neg;
+
+            impl Neg for $struct {
+                type Output = $struct;
+
+                fn neg(self) -> Self::Output {
+                    Self {
+                        $(
+                            $member: -self.$member,
+                        )*
+                    }
+                }
+            }
+
+            impl Neg for &$struct {
+                type Output = $struct;
+
+                fn neg(self) -> Self::Output {
+                    $struct {
+                        $(
+                            $member: -self.$member,
+                        )*
+                    }
                 }
             }
         )*

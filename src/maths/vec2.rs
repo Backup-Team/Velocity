@@ -1,7 +1,8 @@
 use bytemuck::{Pod, Zeroable};
 
 use crate::{
-    maths::{Angle, Normed},
+    maths::{Angle, Mat4, Normed},
+    negate,
     scalar_maths,
     vec_maths,
 };
@@ -82,6 +83,17 @@ impl Vec2 {
     pub fn rotate_by(&mut self, angle: Angle) {
         *self = self.rotate(angle)
     }
+
+    pub fn transform(&self, matrix: &Mat4) -> Self {
+        let x = self.x * matrix[0] + self.y * matrix[4] + matrix[12];
+        let y = self.x * matrix[1] + self.y * matrix[5] + matrix[13];
+
+        Self { x, y }
+    }
+
+    pub fn transform_by(&mut self, matrix: &Mat4) {
+        *self = self.transform(matrix);
+    }
 }
 
 impl Normed for Vec2 {
@@ -100,6 +112,8 @@ scalar_maths!(
     Vec2{ x y } (Div div) (DivAssign div_assign) /=,
 );
 
+negate!(Vec2{ x y },);
+
 impl From<[f32; 2]> for Vec2 {
     fn from([x, y]: [f32; 2]) -> Self {
         Self { x, y }
@@ -109,5 +123,18 @@ impl From<[f32; 2]> for Vec2 {
 impl From<(f32, f32)> for Vec2 {
     fn from((x, y): (f32, f32)) -> Self {
         Self { x, y }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn dot() {
+        assert_eq!(Vec2::unit_x().dot(&Vec2::unit_x()), 1.0);
+        assert_eq!(Vec2::unit_x().dot(&Vec2::unit_y()), 0.0);
+        assert_eq!(Vec2::unit_y().dot(&Vec2::unit_x()), 0.0);
+        assert_eq!(Vec2::unit_x().dot(&-Vec2::unit_x()), -1.0);
     }
 }

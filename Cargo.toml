@@ -13,10 +13,12 @@ codegen-units = 1
 lto           = true
 
 [dependencies]
+bumpalo  = "3.7"
 bytemuck = { version = "1.4", features = [ "derive" ] }
 log      = "0.4"
 reqwest  = { version = "0.11", features = ["json"] }
 serde    = { version = "1", features = ["derive"] }
+simdeez  = "1.0"
 tokio    = { version = "1", features = ["full"], optional = true}
 wgpu     = "0.8"
 winit    = "0.25"

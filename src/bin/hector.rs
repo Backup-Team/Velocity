@@ -1,7 +1,11 @@
 use velocity::{
-    graphics::{create_renderer, Pipeline, Vertex},
-    maths::Vec3,
-    window::{create_window, ControlFlow, Event, WindowEvent},
+    app::{App, LoopState},
+    engine::{Engine, EngineSettings},
+    graphics::{Buffer, Camera, Pipeline, Renderer, Vertex},
+    keyboard::Keyboard,
+    maths::{Angle, Vec3},
+    mouse::Mouse,
+    Bump,
 };
 
 static VERTICES: &[Vertex] = &[
@@ -19,55 +23,49 @@ static VERTICES: &[Vertex] = &[
     },
 ];
 
+struct Demo {
+    pipeline: Pipeline,
+    buffer:   Buffer,
+    camera:   Camera,
+}
+
+impl Demo {
+    pub fn new(renderer: &mut Renderer) -> Self {
+        let pipeline = Pipeline::new(&renderer);
+        let buffer = renderer.create_buffer(VERTICES);
+        let camera = Camera::perspective(0, Angle::degrees(75.0), 0.1, 1000.0);
+
+        Self {
+            pipeline,
+            buffer,
+            camera,
+        }
+    }
+}
+
+impl App for Demo {
+    const EXIT_ON_CLOSE: bool = true;
+
+    fn update_and_render(
+        &mut self,
+        _keyboard: &Keyboard,
+        _mouse: &Mouse,
+        frame_memory: &mut Bump,
+        renderer: &mut Renderer,
+    ) -> LoopState {
+        if let Err(err) = renderer.render(&self.pipeline, &self.buffer) {
+            LoopState::Exit
+        } else {
+            LoopState::Continue
+        }
+    }
+}
+
 #[tokio::main]
 async fn main() {
-    let (event_loop, window) = create_window("demo").expect("Unable to open window");
-
-    let mut renderer = create_renderer(&window)
+    let mut engine = Engine::new("demo", EngineSettings::default_game())
         .await
-        .expect("Unable to create renderer");
+        .expect("Unable to instatiate engine instance");
 
-    let pipeline = Pipeline::new(&renderer);
-    let buffer = renderer.create_buffer(VERTICES);
-
-    event_loop.run(move |event, _, control_flow| {
-        *control_flow = ControlFlow::Poll;
-
-        match event {
-            Event::WindowEvent { event, .. } => {
-                renderer.handle_event(&event);
-
-                match event {
-                    WindowEvent::CloseRequested => *control_flow = ControlFlow::Exit,
-                    WindowEvent::KeyboardInput {
-                        device_id,
-                        input,
-                        is_synthetic,
-                    } => {},
-                    WindowEvent::ModifiersChanged(_) => {},
-                    WindowEvent::CursorMoved {
-                        device_id,
-                        position,
-                        ..
-                    } => {},
-                    WindowEvent::MouseInput {
-                        device_id,
-                        state,
-                        button,
-                        ..
-                    } => {},
-
-                    _ => {},
-                }
-            },
-
-            Event::MainEventsCleared => {
-                if let Err(err) = renderer.render(&pipeline, &buffer) {
-                    *control_flow = err;
-                }
-            },
-
-            _ => {},
-        }
-    });
+    engine.run(Demo::new);
 }
