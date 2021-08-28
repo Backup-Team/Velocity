@@ -166,62 +166,47 @@ impl Renderer {
     }
 
     #[must_use]
-    pub fn render(&mut self, pipeline: &Pipeline, buffer: &Buffer) -> Result<(), ControlFlow> {
-        let render_result = self.swap_chain.get_current_frame().map(|frame| {
-            let frame = frame.output;
+    pub fn begin_frame(&mut self) -> Result<RenderFrame, ControlFlow> {
+        match self.swap_chain.get_current_frame() {
+            Ok(frame) => {
+                let encoder = self
+                    .device
+                    .create_command_encoder(&CommandEncoderDescriptor { label: None });
 
-            let mut encoder = self
-                .device
-                .create_command_encoder(&CommandEncoderDescriptor { label: None });
+                Ok(RenderFrame { frame, encoder })
+            },
 
-            {
-                let colour_attachments = &[RenderPassColourAttachment {
-                    view:           &frame.view,
-                    resolve_target: None,
-                    ops:            Operations {
-                        load:  LoadOp::Clear(Colour::BLACK),
-                        store: true,
+            Err(swap_chain_error) => {
+                let mut critical_failure = false;
+
+                match swap_chain_error {
+                    SwapChainError::Lost => {
+                        log::warn!("{}", swap_chain_error);
+                        self.recreate_swap_chain();
                     },
-                }];
 
-                let mut render_pass = encoder.begin_render_pass(&RenderPassDescriptor {
-                    label:                    None,
-                    color_attachments:        colour_attachments,
-                    depth_stencil_attachment: None,
-                });
+                    SwapChainError::OutOfMemory => {
+                        log::error!("{}", swap_chain_error);
+                        critical_failure = true;
+                    },
 
-                render_pass.set_pipeline(&pipeline.render_pipeline);
-                render_pass.set_vertex_buffer(0, buffer.buffer.slice(..));
-                render_pass.draw(0..buffer.size, 0..1);
-            }
+                    _ => log::error!("{}", swap_chain_error),
+                }
 
-            self.queue.submit(std::iter::once(encoder.finish()));
-        });
-
-        if let Err(swap_chain_error) = render_result {
-            let mut critical_failure = false;
-
-            match swap_chain_error {
-                SwapChainError::Lost => {
-                    log::warn!("{}", swap_chain_error);
-                    self.recreate_swap_chain();
-                },
-
-                SwapChainError::OutOfMemory => {
-                    log::error!("{}", swap_chain_error);
-                    critical_failure = true;
-                },
-
-                _ => log::error!("{}", swap_chain_error),
-            }
-
-            if critical_failure {
-                Err(ControlFlow::Exit)
-            } else {
-                Ok(())
-            }
-        } else {
-            Ok(())
+                if critical_failure {
+                    Err(ControlFlow::Exit)
+                } else {
+                    Err(ControlFlow::Poll)
+                }
+            },
         }
+    }
+
+    // NOTE:
+    // It would have been good to do this though a drop impl on the RenderFrame, but that would
+    // require storing a `&'a mut` reference to the renderer which makes winit `event_loop.run` sad
+    // because of the `move` keyword.
+    pub fn finish_frame(&mut self, frame: RenderFrame) {
+        self.queue.submit(std::iter::once(frame.encoder.finish()));
     }
 }

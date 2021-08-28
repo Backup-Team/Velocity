@@ -1,3 +1,7 @@
+use bytemuck::{Pod, Zeroable};
+
+#[repr(C)]
+#[derive(Debug, Clone, Copy, Pod, Zeroable)]
 pub struct Scale3 {
     pub w: f32,
     pub h: f32,

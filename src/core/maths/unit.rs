@@ -19,16 +19,16 @@ impl<T> Unit<T>
 where
     T: Normed,
 {
-    /// Assumes that the value is already normalised.
-    pub fn from_normalised(value: T) -> Self {
-        Self(value)
-    }
-
-    pub fn from(value: T) -> Self {
+    pub fn new(value: T) -> Self {
         let mut unit = Self(value);
 
-        unit.normalise();
+        unit.normalise_fast();
         unit
+    }
+
+    /// Assumes that the value is already normalised.
+    pub const fn from_normalised(value: T) -> Self {
+        Self(value)
     }
 
     /// Normalizes this vector again. This is useful when repeated computations
@@ -44,7 +44,7 @@ where
     /// Normalizes this vector again using a first-order Taylor approximation.
     /// This is useful when repeated computations might cause a drift in the norm
     /// because of float inaccuracies.
-    pub fn nomalise_fast(&mut self) {
+    pub fn normalise_fast(&mut self) {
         self.0 *= 0.5 * (3.0 - self.0.norm_squared());
     }
 }

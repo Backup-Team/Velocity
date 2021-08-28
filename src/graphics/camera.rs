@@ -1,4 +1,4 @@
-use crate::maths::{Angle, Mat4, Point3, Quat, Vec3};
+use crate::core::maths::{Angle, Mat4, Point3, Quat, Vec3};
 
 pub struct Camera {
     pub position: Point3,

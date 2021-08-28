@@ -1,7 +1,7 @@
-use crate::maths::{Mat4, Point3, Quat, Scale3};
+use crate::core::maths::{Mat4, Quat, Scale3, Vec3};
 
 pub struct Transform {
-    pub translation: Point3,
+    pub translation: Vec3,
     pub rotation:    Quat,
     pub scale:       Scale3,
 }
@@ -21,7 +21,7 @@ impl Transform {
 impl Default for Transform {
     fn default() -> Self {
         Self {
-            translation: Point3::identity(),
+            translation: Vec3::zero(),
             rotation:    Quat::identity(),
             scale:       Scale3::identity(),
         }
